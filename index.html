@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7f6">
+  <title>Cover / Compare — Insurance dashboard</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172b32;
+      --muted: #718087;
+      --line: #e7ecea;
+      --paper: #fff;
+      --canvas: #f5f7f6;
+      --teal: #176f65;
+      --teal-dark: #11594f;
+      --mint: #e9f4f0;
+      --lime: #c8ec84;
+      --gold: #f5c66c;
+      --shadow: 0 12px 34px rgba(28, 52, 54, .055);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .shell { min-height: 100vh; }
+    .topbar {
+      height: 76px; background: var(--paper); border-bottom: 1px solid var(--line);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 5.3%;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 750; letter-spacing: -.04em; }
+    .brand-mark { width: 34px; height: 34px; border-radius: 11px; background: var(--teal); color: white; display: grid; place-items: center; }
+    .brand-mark svg { width: 19px; height: 19px; }
+    .brand-name { font-size: 17px; }
+    .brand-name span { color: var(--teal); }
+    .top-meta { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #56a986; box-shadow: 0 0 0 4px #e8f4ed; }
+    main { max-width: 1380px; margin: 0 auto; padding: 39px 34px 52px; }
+    .intro { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 29px; }
+    .eyebrow { display: flex; align-items: center; gap: 8px; color: var(--teal); font-size: 11px; text-transform: uppercase; letter-spacing: .13em; font-weight: 750; margin-bottom: 12px; }
+    .eyebrow:before { content: ""; width: 18px; height: 2px; background: var(--lime); }
+    h1 { font-size: clamp(29px, 3vw, 39px); letter-spacing: -.055em; line-height: 1.08; margin: 0; font-weight: 680; }
+    .intro p { color: var(--muted); font-size: 14px; margin: 10px 0 0; line-height: 1.55; }
+    .data-pill { flex: 0 0 auto; background: #fff; border: 1px solid var(--line); padding: 10px 13px; border-radius: 10px; color: var(--muted); font-size: 11px; }
+    .data-pill strong { color: var(--ink); font-weight: 650; }
+    .layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); align-items: start; gap: 20px; }
+    .filters, .panel, .metric { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+    .filters { padding: 19px 18px 17px; position: sticky; top: 16px; }
+    .filter-head { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--line); margin-bottom: 17px; }
+    .filter-head h2 { font-size: 14px; margin: 0; letter-spacing: -.02em; }
+    .text-button { border: 0; padding: 4px 0; color: var(--teal); background: transparent; font-size: 11px; font-weight: 700; }
+    .field { margin: 0 0 19px; }
+    .field-label { display: flex; justify-content: space-between; align-items: center; color: #43545a; font-size: 11px; font-weight: 700; margin-bottom: 8px; }
+    .field-hint { color: #99a4a7; font-weight: 500; }
+    .search-wrap { position: relative; }
+    .search-wrap svg { position: absolute; left: 11px; top: 11px; width: 15px; height: 15px; color: #8b989a; }
+    .search-wrap input { padding-left: 34px; }
+    input[type="search"], select {
+      width: 100%; height: 38px; border: 1px solid #e3e9e7; border-radius: 8px; color: var(--ink);
+      background: #fff; padding: 0 10px; outline: none; font-size: 12px;
+    }
+    input:focus, select:focus { border-color: #73a89f; box-shadow: 0 0 0 3px #e8f3f0; }
+    input::placeholder { color: #a5afb0; }
+    .range-line { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 9px; }
+    input[type="range"] { appearance: none; width: 100%; height: 4px; border-radius: 4px; background: #dfeae5; margin: 10px 0 0; }
+    input[type="range"]::-webkit-slider-thumb { appearance: none; width: 15px; height: 15px; border-radius: 50%; background: var(--teal); border: 3px solid white; box-shadow: 0 0 0 1px var(--teal); }
+    .filter-note { margin: 0; color: #96a1a2; font-size: 10px; line-height: 1.5; }
+    .content { min-width: 0; }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 17px; }
+    .metric { padding: 16px 17px 15px; min-height: 112px; }
+    .metric-top { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 10px; font-weight: 650; }
+    .metric-icon { width: 27px; height: 27px; display: grid; place-items: center; border-radius: 8px; background: var(--mint); color: var(--teal); font-size: 13px; }
+    .metric-value { font-size: 25px; font-weight: 690; letter-spacing: -.055em; margin-top: 9px; }
+    .metric-foot { font-size: 10px; color: #97a2a3; margin-top: 3px; }
+    .panel { padding: 18px 19px; margin-bottom: 17px; }
+    .panel-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 17px; }
+    .panel-heading h2 { font-size: 14px; letter-spacing: -.025em; margin: 0; }
+    .panel-heading p { color: var(--muted); font-size: 10px; margin: 5px 0 0; }
+    .chart-unit { font-size: 10px; color: #96a1a2; }
+    .chart { display: grid; gap: 11px; }
+    .chart-row { display: grid; grid-template-columns: minmax(82px, 125px) minmax(70px,1fr) 80px; align-items: center; gap: 12px; }
+    .chart-name { color: #53646a; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bar-track { height: 9px; background: #f0f4f2; border-radius: 10px; overflow: hidden; }
+    .bar { height: 100%; background: linear-gradient(90deg, #6bb6a1, var(--teal)); border-radius: inherit; min-width: 3px; transition: width .35s ease; }
+    .chart-row.lowest .bar { background: linear-gradient(90deg, #c4e88a, #91bd58); }
+    .chart-price { text-align: right; color: #36494e; font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .results-head { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin: 26px 1px 12px; }
+    .results-head h2 { font-size: 17px; letter-spacing: -.035em; margin: 0; }
+    .results-head p { color: var(--muted); font-size: 11px; margin: 5px 0 0; }
+    .sort-wrap { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 10px; }
+    .sort-wrap select { width: 142px; height: 34px; font-size: 11px; }
+    .results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+    .product { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; padding: 16px; box-shadow: var(--shadow); min-width: 0; }
+    .product-top { display: flex; justify-content: space-between; gap: 12px; align-items: start; padding-bottom: 13px; border-bottom: 1px solid #edf0ef; }
+    .insurer { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .insurer-mark { width: 35px; height: 35px; flex: 0 0 35px; border-radius: 10px; display: grid; place-items: center; background: #edf5f1; color: var(--teal-dark); font-weight: 750; font-size: 11px; letter-spacing: -.03em; }
+    .insurer h3 { margin: 0; font-size: 14px; letter-spacing: -.025em; }
+    .insurer small { display: block; margin-top: 3px; font-size: 10px; color: #8a989a; }
+    .premium { text-align: right; flex: 0 0 auto; }
+    .premium strong { display: block; font-size: 15px; letter-spacing: -.04em; }
+    .premium span { color: #99a4a5; font-size: 9px; }
+    .product-meta { display: flex; gap: 7px; flex-wrap: wrap; margin: 12px 0 13px; }
+    .tag { padding: 5px 8px; border-radius: 6px; background: #f1f5f3; color: #536963; font-size: 9px; font-weight: 650; }
+    .tag.type { background: #eef3fa; color: #59708f; }
+    .detail-label { color: #8c999b; font-size: 9px; text-transform: uppercase; letter-spacing: .09em; font-weight: 700; margin: 11px 0 4px; }
+    .detail-text { color: #54646a; font-size: 10px; line-height: 1.5; margin: 0; }
+    .buy-row { margin-top: 14px; padding-top: 11px; border-top: 1px solid #edf0ef; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .buy-row span { color: #778588; font-size: 9px; }
+    .buy-chip { color: var(--teal-dark) !important; background: var(--mint); border-radius: 6px; padding: 5px 7px; font-weight: 650; white-space: nowrap; }
+    .empty { grid-column: 1 / -1; padding: 38px 18px; text-align: center; color: var(--muted); background: white; border: 1px dashed #d8e2de; border-radius: 13px; }
+    .empty strong { display: block; color: var(--ink); margin-bottom: 5px; font-size: 14px; }
+    footer { color: #98a3a4; font-size: 10px; line-height: 1.55; padding: 3px 2px 0; }
+    @media (max-width: 1050px) {
+      main { padding-left: 24px; padding-right: 24px; }
+      .layout { grid-template-columns: 230px minmax(0,1fr); gap: 14px; }
+      .metrics { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .results { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 700px) {
+      .topbar { height: 64px; padding: 0 18px; }
+      .top-meta { font-size: 10px; }
+      main { padding: 27px 15px 35px; }
+      .intro { display: block; }
+      .data-pill { display: inline-block; margin-top: 15px; }
+      .layout { grid-template-columns: 1fr; }
+      .filters { position: static; }
+      .metrics { gap: 9px; }
+      .metric { min-height: 102px; padding: 13px; }
+      .metric-value { font-size: 22px; }
+      .panel { padding: 15px; }
+      .chart-row { grid-template-columns: 86px minmax(50px,1fr) 68px; gap: 8px; }
+      .results-head { align-items: start; }
+      .sort-wrap { align-items: end; flex-direction: column; gap: 4px; }
+      .sort-wrap select { width: 132px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5 19 6v5.3c0 4.3-2.8 7.3-7 9.2-4.2-1.9-7-4.9-7-9.2V6l7-2.5Z" stroke="currentColor" stroke-width="1.8"/><path d="m8.7 12 2.2 2.2 4.5-4.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="brand-name">cover<span>/</span>compare</div>
+      </div>
+      <div class="top-meta"><span class="status-dot"></span><span>INSURANCE OVERVIEW</span></div>
+    </header>
+    <main>
+      <section class="intro">
+        <div>
+          <div class="eyebrow">Your cover, made clearer</div>
+          <h1>Compare with confidence.</h1>
+          <p>Explore premiums, coverage and ways to buy across the insurers in your comparison.</p>
+        </div>
+        <div class="data-pill"><strong>Source</strong> &nbsp;Your uploaded comparison · 8 insurers</div>
+      </section>
+      <div class="layout">
+        <aside class="filters" aria-label="Dashboard filters">
+          <div class="filter-head"><h2>Refine results</h2><button class="text-button" id="reset">Reset all</button></div>
+          <div class="field">
+            <label class="field-label" for="search">Search</label>
+            <div class="search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.6" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4.2 4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <input id="search" type="search" placeholder="Insurer, coverage, benefit…" autocomplete="off">
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label" for="type">Term or life</label>
+            <select id="type"><option value="">All types</option></select>
+          </div>
+          <div class="field">
+            <label class="field-label" for="term">Policy duration <span class="field-hint">years</span></label>
+            <select id="term">
+              <option value="">Any duration</option>
+              <option value="30">Up to 30 years</option>
+              <option value="40">Up to 40 years</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label" for="buy">How to buy</label>
+            <select id="buy"><option value="">All channels</option></select>
+          </div>
+          <div class="field">
+            <label class="field-label" for="price">Monthly equivalent <span id="price-value" class="field-hint"></span></label>
+            <input id="price" type="range" min="0" max="70" step="1" value="70">
+            <div class="range-line"><span>$0</span><span id="range-max"></span></div>
+          </div>
+          <p class="filter-note">Annual premiums are divided by 12 for comparison. Original premium wording is kept on each insurer card.</p>
+        </aside>
+
+        <section class="content" aria-label="Insurance comparison dashboard">
+          <div class="metrics">
+            <article class="metric"><div class="metric-top">INSURERS <span class="metric-icon">◈</span></div><div class="metric-value" id="metric-count">—</div><div class="metric-foot">matching your filters</div></article>
+            <article class="metric"><div class="metric-top">AVG. MONTHLY PREMIUM <span class="metric-icon">↗</span></div><div class="metric-value" id="metric-average">—</div><div class="metric-foot">normalized from listed premiums</div></article>
+            <article class="metric"><div class="metric-top">LOWEST MONTHLY <span class="metric-icon">↓</span></div><div class="metric-value" id="metric-lowest">—</div><div class="metric-foot" id="metric-lowest-name">in the current selection</div></article>
+            <article class="metric"><div class="metric-top">LONGEST DURATION <span class="metric-icon">⌁</span></div><div class="metric-value" id="metric-duration">—</div><div class="metric-foot">maximum listed policy term</div></article>
+          </div>
+          <section class="panel" aria-labelledby="chart-title">
+            <div class="panel-heading"><div><h2 id="chart-title">Premium comparison</h2><p>Indicative monthly equivalent for the insurers shown</p></div><span class="chart-unit">MONTHLY</span></div>
+            <div id="chart" class="chart"></div>
+          </section>
+          <div class="results-head">
+            <div><h2>Insurer details</h2><p id="result-count" aria-live="polite"></p></div>
+            <label class="sort-wrap" for="sort">Sort by
+              <select id="sort"><option value="price-asc">Premium: low to high</option><option value="price-desc">Premium: high to low</option><option value="name">Insurer name</option><option value="duration">Longest duration</option></select>
+            </label>
+          </div>
+          <div id="results" class="results"></div>
+          <footer>Premiums and coverage are reproduced from the uploaded comparison and may depend on age, sum assured and selected coverage. Confirm current product details and eligibility directly with the insurer before purchasing. Monthly equivalents are estimates, not quotes.</footer>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script>
+    const insurers = [
+      { name: "AIA", premium: "$57.60/month ($675/year)", monthly: 57.6, terms: "1 year to 30 years", maxTerm: 30, coverage: "43 Major Stage Critical Illnesses (CI) and 5 rediagnosed or recurred CI", benefits: "Lump sum payout", premiums: "Varies depending on age, sum assured, and coverage", type: "Life", buy: "Online, over the phone, or through an agent" },
+      { name: "FWD", premium: "$9.52/month", monthly: 9.52, terms: "1 year to 40 years", maxTerm: 40, coverage: "100% lumpsum payout for (i) total premiums paid or total sum insured for big 3 benefit; OR (iii) death benefit", benefits: "No medical examination required. Can nominate people who receive the death benefit", premiums: "Varies depending on age, sum assured, and coverage", type: "Life", buy: "Online, over the phone, or through an agent" },
+      { name: "Great Eastern", premium: "$13.60/month", monthly: 13.6, terms: "1 year to 30 years", maxTerm: 30, coverage: "53 critical illnesses at early, intermediate or late stage, inclusive of cancer, heart attack and stroke. Covers 121 CI conditions.", benefits: "Additional 10% of sum assured for angiopplasty and other invasive treatment for coronary artery (capped at $25,000 per life assured)", premiums: "Varies depending on age, sum assured, and coverage", type: "Life", buy: "Online, over the phone, or through an agent" },
+      { name: "Manulife", premium: "$14.50/month", monthly: 14.5, terms: "1 year to 30 years", maxTerm: 30, coverage: "Covers 9 conditions including existing health conditions such as high blood pressure, high blood sugar, high cholesterol, or diabetes", benefits: "No medical check-ups required beforehand", premiums: "Varies depending on age, sum assured, and coverage", type: "Life", buy: "Online, over the phone, or through an agent" },
+      { name: "Prudential", premium: "$18.90/month", monthly: 18.9, terms: "1 year to 30 years", maxTerm: 30, coverage: "Intermediate stages of 37 critical illnesses", benefits: "Child Cover Benefit: complimentary coverage for your children against critical illnesses and juvenile conditions", premiums: "Varies depending on age, sum assured, and coverage", type: "Life", buy: "Online, over the phone, or through an agent" },
+      { name: "Singlife", premium: "$63.9/year", monthly: 63.9 / 12, terms: "1 year to 30 years", maxTerm: 30, coverage: "132 conditions across various stages (early, intermediate and late stage) of critical illnesses", benefits: "Provides ICU benefit, Benign and Borderline Malignant Tumour Benefit and Special Benefit", premiums: "Varies depending on age, sum assured, and coverage", type: "Life", buy: "Online, over the phone, or through an agent" },
+      { name: "Aviva", premium: "$58.80/month", monthly: 58.8, terms: "1 year to 30 years", maxTerm: 30, coverage: "Up to 100% of sum assured for 43 critical illnesses", benefits: "Waiver of future premiums if diagnosed with a critical illness", premiums: "Varies depending on age, sum assured, and coverage", type: "Life", buy: "Online, over the phone, or through an agent" },
+      { name: "Etiqa", premium: "$12.80/month", monthly: 12.8, terms: "1 year to 30 years", maxTerm: 30, coverage: "44 critical illnesses", benefits: "Lump sum payout", premiums: "Varies depending on age, sum assured, and coverage", type: "Life", buy: "Online, over the phone, or through an agent" }
+    ];
+    const $ = (id) => document.getElementById(id);
+    const money = (value) => `$${value.toFixed(2)}`;
+    const esc = (value) => String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+    const initials = (name) => name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
+
+    [...new Set(insurers.map((item) => item.type))].sort().forEach((type) => {
+      $("type").insertAdjacentHTML("beforeend", `<option value="${esc(type)}">${esc(type)}</option>`);
+    });
+    [...new Set(insurers.map((item) => item.buy))].sort().forEach((channel) => {
+      $("buy").insertAdjacentHTML("beforeend", `<option value="${esc(channel)}">${esc(channel)}</option>`);
+    });
+    const maxMonthly = Math.ceil(Math.max(...insurers.map((item) => item.monthly)) / 10) * 10;
+    $("price").max = maxMonthly;
+    $("price").value = maxMonthly;
+    $("range-max").textContent = `$${maxMonthly}`;
+
+    function filteredInsurers() {
+      const query = $("search").value.trim().toLowerCase();
+      const type = $("type").value;
+      const maxTerm = Number($("term").value) || Infinity;
+      const buy = $("buy").value;
+      const price = Number($("price").value);
+      const selected = insurers.filter((item) => {
+        const searchable = [item.name, item.premium, item.terms, item.coverage, item.benefits, item.premiums, item.type, item.buy].join(" ").toLowerCase();
+        return (!query || searchable.includes(query)) &&
+          (!type || item.type === type) &&
+          item.maxTerm <= maxTerm &&
+          (!buy || item.buy === buy) &&
+          item.monthly <= price;
+      });
+      const sort = $("sort").value;
+      return selected.sort((a, b) => {
+        if (sort === "price-desc") return b.monthly - a.monthly;
+        if (sort === "name") return a.name.localeCompare(b.name);
+        if (sort === "duration") return b.maxTerm - a.maxTerm || a.monthly - b.monthly;
+        return a.monthly - b.monthly;
+      });
+    }
+
+    function render() {
+      const data = filteredInsurers();
+      $("price-value").textContent = `≤ ${money(Number($("price").value))}`;
+      $("metric-count").textContent = data.length;
+      $("result-count").textContent = `${data.length} ${data.length === 1 ? "insurer" : "insurers"} match your filters`;
+      if (!data.length) {
+        $("metric-average").textContent = "—";
+        $("metric-lowest").textContent = "—";
+        $("metric-lowest-name").textContent = "No matching insurers";
+        $("metric-duration").textContent = "—";
+        $("chart").innerHTML = '<div class="empty"><strong>No premium data to chart</strong>Try adjusting your filters.</div>';
+        $("results").innerHTML = '<div class="empty"><strong>No insurers found</strong>Try a broader search or reset the filters.</div>';
+        return;
+      }
+      const average = data.reduce((sum, item) => sum + item.monthly, 0) / data.length;
+      const lowest = [...data].sort((a, b) => a.monthly - b.monthly)[0];
+      const longest = Math.max(...data.map((item) => item.maxTerm));
+      $("metric-average").textContent = money(average);
+      $("metric-lowest").textContent = money(lowest.monthly);
+      $("metric-lowest-name").textContent = `${lowest.name} · monthly equivalent`;
+      $("metric-duration").textContent = `${longest} yrs`;
+
+      const chartData = [...data].sort((a, b) => a.monthly - b.monthly);
+      const chartMax = Math.max(...chartData.map((item) => item.monthly));
+      $("chart").innerHTML = chartData.map((item, index) => `
+        <div class="chart-row ${index === 0 ? "lowest" : ""}" title="${esc(item.name)}: ${money(item.monthly)} monthly equivalent">
+          <span class="chart-name">${esc(item.name)}</span>
+          <div class="bar-track"><div class="bar" style="width:${Math.max(4, item.monthly / chartMax * 100)}%"></div></div>
+          <span class="chart-price">${money(item.monthly)}<span style="font-weight:400;color:#9aa5a5"> /mo</span></span>
+        </div>`).join("");
+      $("results").innerHTML = data.map((item) => `
+        <article class="product">
+          <div class="product-top">
+            <div class="insurer"><div class="insurer-mark">${esc(initials(item.name))}</div><div><h3>${esc(item.name)}</h3><small>${esc(item.type)} cover</small></div></div>
+            <div class="premium"><strong>${esc(item.premium)}</strong><span>${item.premium.includes("/year") ? `${money(item.monthly)} /mo equivalent` : "listed premium"}</span></div>
+          </div>
+          <div class="product-meta"><span class="tag">${esc(item.terms)}</span><span class="tag type">${esc(item.type)}</span></div>
+          <div class="detail-label">Coverage</div><p class="detail-text">${esc(item.coverage)}</p>
+          <div class="detail-label">Notable benefits</div><p class="detail-text">${esc(item.benefits)}</p>
+          <div class="buy-row"><span>Premiums ${esc(item.premiums)}</span><span class="buy-chip">${esc(item.buy)}</span></div>
+        </article>`).join("");
+    }
+    ["search", "type", "term", "buy", "price", "sort"].forEach((id) => $(id).addEventListener(id === "search" ? "input" : "change", render));
+    $("price").addEventListener("input", render);
+    $("reset").addEventListener("click", () => {
+      $("search").value = "";
+      $("type").value = "";
+      $("term").value = "";
+      $("buy").value = "";
+      $("price").value = maxMonthly;
+      $("sort").value = "price-asc";
+      render();
+    });
+    render();
+  </script>
+</body>
+</html>
